@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ================================================
+   CSS Variables — Identidade Márcio Gonzalez
+   Dark luxo: preto + dourado como acento
+   ================================================ */
+:root {
+  /* Dourado */
+  --gold-light:   #f0d372;
+  --gold:         #d8b64d;
+  --gold-dark:    #b8922e;
+  --gold-darker:  #8c6c1f;
+  --gold-border:  rgba(216, 182, 77, 0.18);
+
+  /* Preto / fundo */
+  --black:  #080808;
+  --bg-950: #0d0d0d;
+  --bg-900: #131313;
+  --bg-800: #1a1a1a;
+  --bg-700: #222222;
+  --bg-600: #2e2e2e;
+
+  /* Texto */
+  --text-primary: #f4efe3;
+  --text-muted:   rgba(244, 239, 227, 0.58);
+  --text-dim:     rgba(244, 239, 227, 0.35);
+
+  /* shadcn/ui overrides */
+  --background:   var(--bg-950);
+  --foreground:   var(--text-primary);
+  --card:         var(--bg-900);
+  --card-foreground: var(--text-primary);
+  --border:       var(--gold-border);
+  --input:        var(--bg-800);
+  --ring:         var(--gold);
+  --primary:      var(--gold);
+  --primary-foreground: var(--black);
+  --muted:        var(--bg-800);
+  --muted-foreground: var(--text-muted);
+  --accent:       var(--bg-800);
+  --accent-foreground: var(--text-primary);
+  --destructive:  #e05252;
+  --radius:       0.5rem;
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--gold-border);
+}
+
+html {
+  background-color: var(--bg-950);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg-950);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  min-height: 100dvh;
+}
+
+/* Scrollbar — dark + dourado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--gold-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-dark);
+}
+
+/* Botão CTA principal (dourado sobre preto) */
+@layer components {
+  .btn-gold {
+    @apply bg-gold text-brand-black font-syne font-semibold
+           px-6 py-3 rounded-md
+           hover:bg-gold-light active:bg-gold-dark
+           transition-colors duration-150
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold;
+  }
+
+  .btn-ghost {
+    @apply text-offwhite/70 hover:text-offwhite hover:bg-brand-800
+           px-4 py-2 rounded-md transition-colors duration-150;
+  }
+
+  .card-dark {
+    @apply bg-brand-900 border border-gold/20 rounded-xl p-4;
+  }
+
+  .input-dark {
+    @apply bg-brand-800 border border-gold/20 text-offwhite
+           placeholder:text-offwhite/35 rounded-md px-3 py-2
+           focus:outline-none focus:ring-1 focus:ring-gold/60
+           transition-shadow duration-150;
+  }
+
+  .badge-origem {
+    @apply text-xs font-medium px-2 py-0.5 rounded-full;
+  }
+  .badge-origem.meta_ads     { @apply bg-blue-900/40 text-blue-300; }
+  .badge-origem.google_ads   { @apply bg-emerald-900/40 text-emerald-300; }
+  .badge-origem.indicacao    { @apply bg-purple-900/40 text-purple-300; }
+  .badge-origem.recorrente   { @apply bg-yellow-900/40 text-yellow-300; }
+  .badge-origem.outro        { @apply bg-brand-700 text-offwhite/60; }
+}
