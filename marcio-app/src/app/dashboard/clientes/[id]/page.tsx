@@ -12,25 +12,47 @@ interface Props {
   params: Promise<{ id: string }>
 }
 
+type ProfileCliente = {
+  role: string
+}
+
+type ClienteDetalhe = {
+  id: number
+  nome: string
+  telefone: string | null
+  instagram: string | null
+  observacoes: string | null
+  origem_primeira_compra: string | null
+  created_at: string
+}
+
 export default async function ClientePage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as ProfileCliente | null
+
   if (!profile || profile.role === 'barbeiro') redirect('/dashboard')
 
-  const { data: cliente } = await supabase
+  const { data: clienteData } = await supabase
     .from('clientes')
     .select('*')
     .eq('id', id)
     .single()
+
+  const cliente = clienteData as ClienteDetalhe | null
 
   if (!cliente) notFound()
 
@@ -47,18 +69,23 @@ export default async function ClientePage({ params }: Props) {
     .limit(20)
 
   // Total gasto (REALIZADOS)
-  const totalServicos = historico
-    ?.filter((a: any) => a.status === 'REALIZADO')
-    .reduce((s: number, a: any) => s + (a.valor_servico ?? 0), 0) ?? 0
-  const totalProteses = historico
-    ?.filter((a: any) => a.status === 'REALIZADO')
-    .reduce((s: number, a: any) => s + (a.valor_protese ?? 0), 0) ?? 0
+  const totalServicos =
+    historico
+      ?.filter((a: any) => a.status === 'REALIZADO')
+      .reduce((s: number, a: any) => s + (Number(a.valor_servico) || 0), 0) ?? 0
+
+  const totalProteses =
+    historico
+      ?.filter((a: any) => a.status === 'REALIZADO')
+      .reduce((s: number, a: any) => s + (Number(a.valor_protese) || 0), 0) ?? 0
 
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
-
       <div className="pt-2">
-        <Link href="/dashboard/clientes" className="inline-flex items-center gap-1 text-sm text-offwhite/50 hover:text-offwhite">
+        <Link
+          href="/dashboard/clientes"
+          className="inline-flex items-center gap-1 text-sm text-offwhite/50 hover:text-offwhite"
+        >
           <ChevronLeft size={15} />
           Clientes
         </Link>
@@ -70,10 +97,11 @@ export default async function ClientePage({ params }: Props) {
           <h1 className="font-syne font-bold text-xl text-offwhite">{cliente.nome}</h1>
           {cliente.origem_primeira_compra && (
             <div className="mt-1.5">
-              <BadgeOrigem origem={cliente.origem_primeira_compra} />
+              <BadgeOrigem origem={cliente.origem_primeira_compra as any} />
             </div>
           )}
         </div>
+
         {cliente.telefone && (
           <a
             href={whatsappLink(cliente.telefone)}
@@ -91,7 +119,9 @@ export default async function ClientePage({ params }: Props) {
       <Card>
         <CardContent className="pt-4 space-y-3">
           {cliente.telefone && <Row label="Telefone" value={cliente.telefone} />}
-          {cliente.instagram && <Row label="Instagram" value={`@${cliente.instagram.replace('@', '')}`} />}
+          {cliente.instagram && (
+            <Row label="Instagram" value={`@${cliente.instagram.replace('@', '')}`} />
+          )}
           {cliente.observacoes && <Row label="Observações" value={cliente.observacoes} />}
           <Row
             label="Cadastrado em"
@@ -105,19 +135,28 @@ export default async function ClientePage({ params }: Props) {
         <Card className="border-gold/30 bg-gold/5">
           <CardContent className="pt-4 space-y-2">
             <p className="text-xs text-gold/70 uppercase tracking-wide">Total gasto</p>
+
             <div className="flex justify-between">
               <span className="text-sm text-offwhite/60">Serviços</span>
-              <span className="text-sm font-medium text-offwhite">{formatBRL(totalServicos)}</span>
+              <span className="text-sm font-medium text-offwhite">
+                {formatBRL(totalServicos)}
+              </span>
             </div>
+
             {totalProteses > 0 && (
               <div className="flex justify-between">
                 <span className="text-sm text-offwhite/60">Próteses (material)</span>
-                <span className="text-sm font-medium text-offwhite">{formatBRL(totalProteses)}</span>
+                <span className="text-sm font-medium text-offwhite">
+                  {formatBRL(totalProteses)}
+                </span>
               </div>
             )}
+
             <div className="flex justify-between pt-1 border-t border-gold/10">
               <span className="text-sm font-medium text-gold">Total</span>
-              <span className="text-sm font-bold text-gold">{formatBRL(totalServicos + totalProteses)}</span>
+              <span className="text-sm font-bold text-gold">
+                {formatBRL(totalServicos + totalProteses)}
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -126,8 +165,13 @@ export default async function ClientePage({ params }: Props) {
       {/* Histórico */}
       <div>
         <h2 className="font-syne font-semibold text-offwhite mb-3">Histórico</h2>
+
         {!historico?.length ? (
-          <Card><CardContent className="py-6 text-center"><p className="text-offwhite/40 text-sm">Sem agendamentos</p></CardContent></Card>
+          <Card>
+            <CardContent className="py-6 text-center">
+              <p className="text-offwhite/40 text-sm">Sem agendamentos</p>
+            </CardContent>
+          </Card>
         ) : (
           <div className="space-y-2">
             {historico.map((ag: any) => (
@@ -139,16 +183,20 @@ export default async function ClientePage({ params }: Props) {
                         <p className="text-sm text-offwhite">
                           {ag.servico?.nome}
                           {ag.valor_servico && (
-                            <span className="text-offwhite/50 ml-1.5">· {formatBRL(ag.valor_servico)}</span>
+                            <span className="text-offwhite/50 ml-1.5">
+                              · {formatBRL(ag.valor_servico)}
+                            </span>
                           )}
                         </p>
                         <p className="text-xs text-offwhite/40 mt-0.5">
-                          {format(new Date(ag.inicio), "d/MM/yy HH:mm")} · {ag.executor?.nome}
+                          {format(new Date(ag.inicio), 'd/MM/yy HH:mm')} ·{' '}
+                          {ag.executor?.nome}
                         </p>
                       </div>
+
                       <div className="flex flex-col items-end gap-1">
-                        <BadgeStatus status={ag.status} />
-                        <BadgeOrigem origem={ag.origem} />
+                        <BadgeStatus status={ag.status as any} />
+                        <BadgeOrigem origem={ag.origem as any} />
                       </div>
                     </div>
                   </CardContent>
@@ -158,7 +206,6 @@ export default async function ClientePage({ params }: Props) {
           </div>
         )}
       </div>
-
     </div>
   )
 }

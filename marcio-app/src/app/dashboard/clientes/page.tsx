@@ -10,16 +10,35 @@ interface PageProps {
   searchParams: Promise<{ q?: string }>
 }
 
+type ProfileClientes = {
+  role: string
+}
+
+type ClienteLista = {
+  id: number
+  nome: string
+  telefone: string | null
+  instagram: string | null
+  origem_primeira_compra: string | null
+  created_at: string
+}
+
 export default async function ClientesPage({ searchParams }: PageProps) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('users')
     .select('role')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as ProfileClientes | null
 
   if (!profile || profile.role === 'barbeiro') redirect('/dashboard')
 
@@ -36,18 +55,18 @@ export default async function ClientesPage({ searchParams }: PageProps) {
     query = query.ilike('nome', `%${q}%`)
   }
 
-  const { data: clientes } = await query
+  const { data: clientesData } = await query
+  const clientes = (clientesData ?? []) as ClienteLista[]
 
   return (
     <div className="p-4 max-w-2xl mx-auto space-y-4">
-
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-2">
           <Users size={18} className="text-gold/60" />
           <h1 className="font-syne font-bold text-xl text-gold">Clientes</h1>
         </div>
-        <span className="text-xs text-offwhite/40">{clientes?.length ?? 0} cadastrados</span>
+        <span className="text-xs text-offwhite/40">{clientes.length} cadastrados</span>
       </div>
 
       {/* Busca */}
@@ -62,7 +81,7 @@ export default async function ClientesPage({ searchParams }: PageProps) {
       </form>
 
       {/* Lista */}
-      {!clientes?.length ? (
+      {!clientes.length ? (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-offwhite/40 text-sm">
@@ -72,7 +91,7 @@ export default async function ClientesPage({ searchParams }: PageProps) {
         </Card>
       ) : (
         <div className="space-y-2">
-          {clientes.map(c => (
+          {clientes.map((c) => (
             <Link key={c.id} href={`/dashboard/clientes/${c.id}`}>
               <Card className="hover:border-gold/40 transition-colors cursor-pointer">
                 <CardContent className="py-3 px-4">
@@ -84,16 +103,17 @@ export default async function ClientesPage({ searchParams }: PageProps) {
                           <span className="text-offwhite/40 text-xs truncate">{c.telefone}</span>
                         )}
                         {c.origem_primeira_compra && (
-                          <BadgeOrigem origem={c.origem_primeira_compra} />
+                          <BadgeOrigem origem={c.origem_primeira_compra as any} />
                         )}
                       </div>
                     </div>
+
                     {c.telefone && (
                       <a
                         href={whatsappLink(c.telefone)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={e => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                         className="text-emerald-400/60 hover:text-emerald-400 transition-colors shrink-0"
                       >
                         <MessageCircle size={16} />
@@ -106,7 +126,6 @@ export default async function ClientesPage({ searchParams }: PageProps) {
           ))}
         </div>
       )}
-
     </div>
   )
 }

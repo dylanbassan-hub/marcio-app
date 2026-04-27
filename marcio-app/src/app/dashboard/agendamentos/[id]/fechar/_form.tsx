@@ -51,12 +51,15 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
         }
       }
 
-      const { error: err } = await supabase
+      const { error: err } = await (supabase as any)
         .from('agendamentos')
         .update(update)
         .eq('id', agendamentoId)
 
-      if (err) { setError(`Erro: ${err.message}`); return }
+      if (err) {
+        setError(`Erro: ${err.message}`)
+        return
+      }
 
       router.push(`/dashboard/agendamentos/${agendamentoId}`)
       router.refresh()
@@ -65,16 +68,17 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-
       {/* Resultado */}
       <div className="space-y-1.5">
-        <label className="block text-sm text-offwhite/70">Resultado <span className="text-gold">*</span></label>
+        <label className="block text-sm text-offwhite/70">
+          Resultado <span className="text-gold">*</span>
+        </label>
         <div className="flex gap-2">
-          {(['REALIZADO', 'NAO_COMPARECEU'] as const).map(opt => (
+          {(['REALIZADO', 'NAO_COMPARECEU'] as const).map((opt) => (
             <button
               key={opt}
               type="button"
-              onClick={() => setForm(f => ({ ...f, resultado: opt }))}
+              onClick={() => setForm((f) => ({ ...f, resultado: opt }))}
               className={`flex-1 py-2.5 rounded-md border text-sm font-medium transition-colors ${
                 form.resultado === opt
                   ? opt === 'REALIZADO'
@@ -96,13 +100,17 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
             <div className="space-y-1.5">
               <label className="block text-sm text-offwhite/70">
                 Valor da prótese (material)
-                <span className="text-offwhite/40 text-xs ml-1">— vai 100% pro salão, não entra no rateio</span>
+                <span className="text-offwhite/40 text-xs ml-1">
+                  — vai 100% pro salão, não entra no rateio
+                </span>
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-offwhite/40">R$</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-offwhite/40">
+                  R$
+                </span>
                 <Input
                   value={form.valorProtese}
-                  onChange={e => setForm(f => ({ ...f, valorProtese: e.target.value }))}
+                  onChange={(e) => setForm((f) => ({ ...f, valorProtese: e.target.value }))}
                   className="pl-9"
                   placeholder="0,00"
                   inputMode="decimal"
@@ -115,13 +123,17 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
           <div className="space-y-1.5">
             <label className="block text-sm text-offwhite/70">
               Valor do serviço <span className="text-gold">*</span>
-              <span className="text-offwhite/40 text-xs ml-1">— base do rateio de comissões</span>
+              <span className="text-offwhite/40 text-xs ml-1">
+                — base do rateio de comissões
+              </span>
             </label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-offwhite/40">R$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-offwhite/40">
+                R$
+              </span>
               <Input
                 value={form.valorServico}
-                onChange={e => setForm(f => ({ ...f, valorServico: e.target.value }))}
+                onChange={(e) => setForm((f) => ({ ...f, valorServico: e.target.value }))}
                 className="pl-9"
                 placeholder="0,00"
                 inputMode="decimal"
@@ -130,10 +142,11 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
             </div>
             {form.valorServico && (
               <p className="text-xs text-gold/70">
-                Comissões serão calculadas sobre {
-                  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-                    .format(parseFloat(form.valorServico.replace(',', '.')) || 0)
-                }
+                Comissões serão calculadas sobre{' '}
+                {new Intl.NumberFormat('pt-BR', {
+                  style: 'currency',
+                  currency: 'BRL',
+                }).format(parseFloat(form.valorServico.replace(',', '.')) || 0)}
               </p>
             )}
           </div>
@@ -142,11 +155,11 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
           <div className="space-y-1.5">
             <label className="block text-sm text-offwhite/70">Forma de pagamento</label>
             <div className="grid grid-cols-2 gap-2">
-              {PAGAMENTOS.map(pag => (
+              {PAGAMENTOS.map((pag) => (
                 <button
                   key={pag}
                   type="button"
-                  onClick={() => setForm(f => ({ ...f, pagamento: pag }))}
+                  onClick={() => setForm((f) => ({ ...f, pagamento: pag }))}
                   className={`py-2 rounded-md border text-sm transition-colors ${
                     form.pagamento === pag
                       ? 'bg-gold/15 border-gold/50 text-gold'

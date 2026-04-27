@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { formatBRL } from '@/lib/utils'
@@ -9,18 +9,26 @@ import { ptBR } from 'date-fns/locale'
 import { CalendarPlus, TrendingUp, Users, DollarSign } from 'lucide-react'
 import type { UserRow } from '@/lib/types/database'
 
+type AgendamentoRealizado = {
+  valor_servico: number | null
+  valor_protese: number | null
+  origem: string | null
+}
+
 export async function AdminDashboard({ profile }: { profile: UserRow }) {
   const supabase = await createClient()
   const now = new Date()
   const mesInicio = startOfMonth(now).toISOString()
-  const mesFim    = endOfMonth(now).toISOString()
+  const mesFim = endOfMonth(now).toISOString()
   const hojeInicio = startOfDay(now).toISOString()
-  const hojeFim    = endOfDay(now).toISOString()
+  const hojeFim = endOfDay(now).toISOString()
 
   // Agendamentos de hoje
   const { data: agendamentosHoje } = await supabase
     .from('agendamentos')
-    .select('id, status, inicio, fim, origem, cliente:clientes(nome), executor:users!agendamentos_executor_id_fkey(nome), servico:servicos(nome, codigo)')
+    .select(
+      'id, status, inicio, fim, origem, cliente:clientes(nome), executor:users!agendamentos_executor_id_fkey(nome), servico:servicos(nome, codigo)'
+    )
     .gte('inicio', hojeInicio)
     .lte('inicio', hojeFim)
     .not('status', 'in', '(CANCELADO)')
@@ -34,12 +42,23 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
     .gte('inicio', mesInicio)
     .lte('inicio', mesFim)
 
-  const faturamentoServicos = realizados?.reduce((s, a) => s + (a.valor_servico ?? 0), 0) ?? 0
-  const faturamentoProteses = realizados?.reduce((s, a) => s + (a.valor_protese ?? 0), 0) ?? 0
+  const realizadosTyped = (realizados ?? []) as AgendamentoRealizado[]
+
+  const faturamentoServicos = realizadosTyped.reduce(
+    (s, a) => s + (Number(a.valor_servico) || 0),
+    0
+  )
+
+  const faturamentoProteses = realizadosTyped.reduce(
+    (s, a) => s + (Number(a.valor_protese) || 0),
+    0
+  )
+
   const totalMes = faturamentoServicos + faturamentoProteses
-  const totalTrafegoPago = realizados
-    ?.filter(a => a.origem === 'META_ADS' || a.origem === 'GOOGLE_ADS')
-    .reduce((s, a) => s + (a.valor_servico ?? 0), 0) ?? 0
+
+  const totalTrafegoPago = realizadosTyped
+    .filter((a) => a.origem === 'META_ADS' || a.origem === 'GOOGLE_ADS')
+    .reduce((s, a) => s + (Number(a.valor_servico) || 0), 0)
 
   // Clientes novos do mês
   const { count: clientesNovos } = await supabase
@@ -55,13 +74,13 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
     .eq('pago', false)
     .gte('created_at', mesInicio)
 
-  const comissaoPendente = comissoesDylan
-    ?.filter((c: any) => c.user?.is_trafego)
-    .reduce((s: number, c: any) => s + c.valor, 0) ?? 0
+  const comissaoPendente =
+    comissoesDylan
+      ?.filter((c: any) => c.user?.is_trafego)
+      .reduce((s: number, c: any) => s + Number(c.valor || 0), 0) ?? 0
 
   return (
     <div className="p-4 space-y-6 max-w-2xl mx-auto lg:max-w-none">
-
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <div>
@@ -148,9 +167,14 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs text-gold/70">Serviços via tráfego pago (mês)</p>
-                <p className="text-lg font-syne font-bold text-gold">{formatBRL(totalTrafegoPago)}</p>
+                <p className="text-lg font-syne font-bold text-gold">
+                  {formatBRL(totalTrafegoPago)}
+                </p>
               </div>
-              <Link href="/dashboard/relatorios" className="text-xs text-gold/60 hover:text-gold underline">
+              <Link
+                href="/dashboard/relatorios"
+                className="text-xs text-gold/60 hover:text-gold underline"
+              >
                 ver relatório
               </Link>
             </div>
@@ -188,7 +212,8 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
                           <BadgeOrigem origem={ag.origem} />
                         </div>
                         <p className="text-offwhite/50 text-xs mt-0.5">
-                          {format(new Date(ag.inicio), 'HH:mm')} — {ag.servico?.nome} · {ag.executor?.nome}
+                          {format(new Date(ag.inicio), 'HH:mm')} — {ag.servico?.nome} ·{' '}
+                          {ag.executor?.nome}
                         </p>
                       </div>
                       <BadgeStatus status={ag.status} />
@@ -200,7 +225,6 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
           </div>
         )}
       </div>
-
     </div>
   )
 }

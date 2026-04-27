@@ -2,22 +2,32 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { BottomNav, Sidebar } from '@/components/nav'
 
+type DashboardProfile = {
+  id: string
+  ativo: boolean
+}
+
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) redirect('/login')
 
   // Verifica se o usuário tem profile na tabela users
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('users')
     .select('id, ativo')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as DashboardProfile | null
 
   if (!profile || !profile.ativo) {
     // Conta sem profile ou desativada — redireciona pro login com mensagem

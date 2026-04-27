@@ -15,21 +15,26 @@ interface Props {
 
 const LABELS: Partial<Record<StatusAgendamento, string>> = {
   CONFIRMADO: 'Confirmar presença',
-  CANCELADO:  'Cancelar agendamento',
+  CANCELADO: 'Cancelar agendamento',
   NAO_COMPARECEU: 'Marcar não compareceu',
 }
 
-export function AtualizarStatusBtn({ agendamentoId, novoStatus, variant = 'default' }: Props) {
+export function AtualizarStatusBtn({
+  agendamentoId,
+  novoStatus,
+  variant = 'default',
+}: Props) {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
   const supabase = createClient()
 
   function handleClick() {
     startTransition(async () => {
-      await supabase
+      await (supabase as any)
         .from('agendamentos')
         .update({ status: novoStatus })
         .eq('id', agendamentoId)
+
       router.refresh()
     })
   }

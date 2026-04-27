@@ -4,7 +4,16 @@ import { redirect } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
-import { startOfWeek, endOfWeek, addWeeks, format, eachDayOfInterval, isSameDay, startOfDay, endOfDay } from 'date-fns'
+import {
+  startOfWeek,
+  endOfWeek,
+  addWeeks,
+  format,
+  eachDayOfInterval,
+  isSameDay,
+  startOfDay,
+  endOfDay,
+} from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react'
 
@@ -12,27 +21,38 @@ interface PageProps {
   searchParams: Promise<{ semana?: string }>
 }
 
+type ProfileAgenda = {
+  id: string
+  role: string
+  is_marcio: boolean | null
+}
+
 export default async function AgendaPage({ searchParams }: PageProps) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (!user) redirect('/login')
 
-  const { data: profile } = await supabase
+  const { data: profileData } = await supabase
     .from('users')
     .select('id, role, is_marcio')
     .eq('id', user.id)
     .single()
+
+  const profile = profileData as ProfileAgenda | null
+
   if (!profile) redirect('/login')
 
   const { semana } = await searchParams
   const semanaOffset = parseInt(semana ?? '0', 10) || 0
   const hoje = new Date()
   const referenciaData = addWeeks(hoje, semanaOffset)
-  const semanaInicio = startOfWeek(referenciaData, { weekStartsOn: 1 }) // Segunda
-  const semanaFim    = endOfWeek(referenciaData, { weekStartsOn: 1 })   // Domingo
+  const semanaInicio = startOfWeek(referenciaData, { weekStartsOn: 1 })
+  const semanaFim = endOfWeek(referenciaData, { weekStartsOn: 1 })
   const dias = eachDayOfInterval({ start: semanaInicio, end: semanaFim })
 
-  // Filtrar por executor se for barbeiro
   let query = supabase
     .from('agendamentos')
     .select(`
@@ -57,7 +77,6 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   return (
     <div className="p-4 space-y-4 max-w-2xl mx-auto lg:max-w-none">
-
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <h1 className="font-syne font-bold text-xl text-gold">Agenda</h1>
@@ -82,11 +101,10 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
         <div className="text-center">
           <p className="text-offwhite font-medium text-sm">
-            {format(semanaInicio, "d MMM", { locale: ptBR })} – {format(semanaFim, "d MMM yyyy", { locale: ptBR })}
+            {format(semanaInicio, 'd MMM', { locale: ptBR })} –{' '}
+            {format(semanaFim, 'd MMM yyyy', { locale: ptBR })}
           </p>
-          {semanaOffset === 0 && (
-            <p className="text-xs text-gold/70">Semana atual</p>
-          )}
+          {semanaOffset === 0 && <p className="text-xs text-gold/70">Semana atual</p>}
         </div>
 
         <Button asChild variant="ghost" size="sm">
@@ -108,11 +126,19 @@ export default async function AgendaPage({ searchParams }: PageProps) {
           return (
             <div key={dia.toISOString()}>
               {/* Cabeçalho do dia */}
-              <div className={`flex items-center gap-2 mb-2 ${isHoje ? 'text-gold' : 'text-offwhite/50'}`}>
+              <div
+                className={`flex items-center gap-2 mb-2 ${
+                  isHoje ? 'text-gold' : 'text-offwhite/50'
+                }`}
+              >
                 <span className="text-xs font-medium uppercase tracking-wide">
                   {format(dia, 'EEEE', { locale: ptBR })}
                 </span>
-                <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${isHoje ? 'bg-gold/20 text-gold' : ''}`}>
+                <span
+                  className={`text-xs font-semibold px-1.5 py-0.5 rounded ${
+                    isHoje ? 'bg-gold/20 text-gold' : ''
+                  }`}
+                >
                   {format(dia, 'd/MM')}
                 </span>
                 <span className="text-xs text-offwhite/30">({agsDia.length})</span>
@@ -124,7 +150,11 @@ export default async function AgendaPage({ searchParams }: PageProps) {
                 <div className="space-y-1.5">
                   {agsDia.map((ag: any) => (
                     <Link key={ag.id} href={`/dashboard/agendamentos/${ag.id}`}>
-                      <Card className={`hover:border-gold/40 transition-colors cursor-pointer ${isHoje ? 'border-gold/25' : ''}`}>
+                      <Card
+                        className={`hover:border-gold/40 transition-colors cursor-pointer ${
+                          isHoje ? 'border-gold/25' : ''
+                        }`}
+                      >
                         <CardContent className="py-2.5 px-4">
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0 flex-1 flex items-center gap-3">
@@ -155,7 +185,6 @@ export default async function AgendaPage({ searchParams }: PageProps) {
           )
         })}
       </div>
-
     </div>
   )
 }
