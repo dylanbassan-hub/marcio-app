@@ -5,6 +5,7 @@ import { BadgeStatus } from '@/components/ui/badge'
 import { formatBRL } from '@/lib/utils'
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, format, addDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatHora } from '@/lib/date'
 import { DollarSign } from 'lucide-react'
 import type { UserRow } from '@/lib/types/database'
 
@@ -60,7 +61,7 @@ export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
                         {ag.cliente?.nome}
                       </p>
                       <p className="text-offwhite/50 text-xs mt-0.5">
-                        {format(new Date(ag.inicio), 'HH:mm')} · {ag.servico?.nome}
+                        {formatHora(ag.inicio)} · {ag.servico?.nome}
                       </p>
                     </div>
                     <BadgeStatus status={ag.status} />

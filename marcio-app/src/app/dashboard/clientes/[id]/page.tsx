@@ -6,6 +6,7 @@ import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { formatBRL, whatsappLink } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatDataHoraCurta } from '@/lib/date'
 import { ChevronLeft, MessageCircle } from 'lucide-react'
 
 interface Props {
@@ -189,7 +190,7 @@ export default async function ClientePage({ params }: Props) {
                           )}
                         </p>
                         <p className="text-xs text-offwhite/40 mt-0.5">
-                          {format(new Date(ag.inicio), 'd/MM/yy HH:mm')} ·{' '}
+                          {formatDataHoraCurta(ag.inicio)} ·{' '}
                           {ag.executor?.nome}
                         </p>
                       </div>

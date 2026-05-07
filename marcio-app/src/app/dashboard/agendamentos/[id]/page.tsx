@@ -7,6 +7,7 @@ import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { formatBRL, whatsappLink } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatDataHora, formatDiaHora } from '@/lib/date'
 import { MessageCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import { AtualizarStatusBtn } from './_status-btn'
 
@@ -122,7 +123,7 @@ export default async function AgendamentoPage({ params }: Props) {
         <div>
           <h1 className="font-syne font-bold text-xl text-offwhite">{ag.cliente.nome}</h1>
           <p className="text-offwhite/50 text-sm">
-            {format(new Date(ag.inicio), "EEE, d 'de' MMM · HH:mm", { locale: ptBR })}
+            {formatDataHora(ag.inicio)}
           </p>
         </div>
         <BadgeStatus status={ag.status as any} />
@@ -185,7 +186,7 @@ export default async function AgendamentoPage({ params }: Props) {
             <Row label="Serviço" value={formatBRL(ag.valor_servico)} />
             {ag.pagamento_forma && <Row label="Pagamento" value={ag.pagamento_forma} />}
             {ag.fechado_at && (
-              <Row label="Fechado em" value={format(new Date(ag.fechado_at), 'd/MM HH:mm')} />
+              <Row label="Fechado em" value={formatDiaHora(ag.fechado_at)} />
             )}
           </CardContent>
         </Card>

@@ -15,6 +15,7 @@ import {
   endOfDay,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatHora } from '@/lib/date'
 import { CalendarPlus, ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface PageProps {
@@ -159,7 +160,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
                           <div className="flex items-center justify-between gap-2">
                             <div className="min-w-0 flex-1 flex items-center gap-3">
                               <span className="text-offwhite/60 text-xs font-mono shrink-0 w-10">
-                                {format(new Date(ag.inicio), 'HH:mm')}
+                                {formatHora(ag.inicio)}
                               </span>
                               <div className="min-w-0">
                                 <p className="text-offwhite font-medium text-sm truncate">

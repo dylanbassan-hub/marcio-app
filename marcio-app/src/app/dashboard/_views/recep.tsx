@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { startOfDay, endOfDay, addDays, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatHora } from '@/lib/date'
 import { CalendarPlus, MessageCircle } from 'lucide-react'
 import { whatsappLink } from '@/lib/utils'
 import type { UserRow } from '@/lib/types/database'
@@ -83,7 +84,7 @@ export async function RecepDashboard({ profile }: { profile: UserRow }) {
                             <BadgeOrigem origem={ag.origem} />
                           </div>
                           <p className="text-offwhite/50 text-xs mt-0.5">
-                            {format(new Date(ag.inicio), 'HH:mm')} · {ag.servico?.nome}
+                            {formatHora(ag.inicio)} · {ag.servico?.nome}
                           </p>
                           <p className="text-offwhite/40 text-xs">{ag.executor?.nome}</p>
                         </div>

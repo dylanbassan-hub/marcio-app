@@ -6,6 +6,7 @@ import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { formatBRL } from '@/lib/utils'
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+import { formatHora } from '@/lib/date'
 import { CalendarPlus, TrendingUp, Users, DollarSign } from 'lucide-react'
 import type { UserRow } from '@/lib/types/database'
 
@@ -212,7 +213,7 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
                           <BadgeOrigem origem={ag.origem} />
                         </div>
                         <p className="text-offwhite/50 text-xs mt-0.5">
-                          {format(new Date(ag.inicio), 'HH:mm')} — {ag.servico?.nome} ·{' '}
+                          {formatHora(ag.inicio)} — {ag.servico?.nome} ·{' '}
                           {ag.executor?.nome}
                         </p>
                       </div>
