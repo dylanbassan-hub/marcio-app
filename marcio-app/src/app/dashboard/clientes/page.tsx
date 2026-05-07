@@ -91,11 +91,11 @@ export default async function ClientesPage({ searchParams }: PageProps) {
       ) : (
         <div className="space-y-2">
           {clientes.map((c) => (
-            <Link key={c.id} href={`/dashboard/clientes/${c.id}`}>
-              <Card className="hover:border-gold/40 transition-colors cursor-pointer">
-                <CardContent className="py-3 px-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0 flex-1">
+            <div key={c.id} className="relative">
+              <Link href={`/dashboard/clientes/${c.id}`}>
+                <Card className="hover:border-gold/40 transition-colors cursor-pointer">
+                  <CardContent className="py-3 px-4 pr-10">
+                    <div className="min-w-0">
                       <p className="text-offwhite font-medium text-sm truncate">{c.nome}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {c.telefone && (
@@ -106,22 +106,20 @@ export default async function ClientesPage({ searchParams }: PageProps) {
                         )}
                       </div>
                     </div>
-
-                    {c.telefone && (
-                      <a
-                        href={whatsappLink(c.telefone)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-emerald-400/60 hover:text-emerald-400 transition-colors shrink-0"
-                      >
-                        <MessageCircle size={16} />
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
+                  </CardContent>
+                </Card>
+              </Link>
+              {c.telefone && (
+                <a
+                  href={whatsappLink(c.telefone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400/60 hover:text-emerald-400 transition-colors"
+                >
+                  <MessageCircle size={16} />
+                </a>
+              )}
+            </div>
           ))}
         </div>
       )}
