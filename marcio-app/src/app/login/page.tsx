@@ -24,6 +24,7 @@ export default function LoginPage() {
       setError('E-mail ou senha incorretos.')
       setLoading(false)
     } else {
+      // Força reload completo para o middleware ler a sessão nova
       window.location.href = '/dashboard'
     }
   }

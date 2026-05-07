@@ -39,12 +39,13 @@ export default async function NovoAgendamentoPage() {
   // Só admin e recepcionista podem criar
   if (!profile || profile.role === 'barbeiro') redirect('/dashboard/agenda')
 
-  // Buscar executores ativos (admin + barbeiro)
+  // Buscar executores: apenas barbeiros + Márcio (is_marcio=true)
+  // Dylan e Liandra são admin mas não executam serviços
   const { data: executoresData } = await supabase
     .from('users')
     .select('id, nome, role')
     .eq('ativo', true)
-    .in('role', ['admin', 'barbeiro'])
+    .or('role.eq.barbeiro,is_marcio.eq.true')
     .order('nome')
 
   const executores = (executoresData ?? []) as ExecutorForm[]

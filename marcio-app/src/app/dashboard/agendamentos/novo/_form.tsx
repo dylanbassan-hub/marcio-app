@@ -20,6 +20,47 @@ type IdRow = {
 
 const ORIGENS = Object.entries(ORIGEM_LABELS) as [OrigemLead, string][]
 
+// ─── Componentes fora do componente pai para evitar remount a cada render ───
+
+function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string
+  required?: boolean
+  children: React.ReactNode
+}) {
+  return (
+    <div className="space-y-1.5">
+      <label className="block text-sm text-offwhite/70">
+        {label} {required && <span className="text-gold">*</span>}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+function StyledSelect({
+  value,
+  onChange,
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      value={value}
+      onChange={onChange}
+      className="flex h-9 w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-1 text-base md:text-sm text-offwhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50"
+      {...props}
+    >
+      {children}
+    </select>
+  )
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+
 export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -142,39 +183,6 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
     })
   }
 
-  const Field = ({
-    label,
-    required,
-    children,
-  }: {
-    label: string
-    required?: boolean
-    children: React.ReactNode
-  }) => (
-    <div className="space-y-1.5">
-      <label className="block text-sm text-offwhite/70">
-        {label} {required && <span className="text-gold">*</span>}
-      </label>
-      {children}
-    </div>
-  )
-
-  const Select = ({
-    value,
-    onChange,
-    children,
-    ...props
-  }: React.SelectHTMLAttributes<HTMLSelectElement>) => (
-    <select
-      value={value}
-      onChange={onChange}
-      className="flex h-9 w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-1 text-base md:text-sm text-offwhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50"
-      {...props}
-    >
-      {children}
-    </select>
-  )
-
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <Field label="Serviço" required>
@@ -198,7 +206,7 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
       </Field>
 
       <Field label="Origem do lead" required>
-        <Select
+        <StyledSelect
           value={form.origem}
           onChange={(e) => setForm((f) => ({ ...f, origem: e.target.value as OrigemLead }))}
           required
@@ -209,7 +217,7 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
               {label}
             </option>
           ))}
-        </Select>
+        </StyledSelect>
 
         {form.origem === 'OUTRO' && (
           <Input
@@ -259,17 +267,17 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
       </div>
 
       <Field label="Executor" required>
-        <Select
+        <StyledSelect
           value={form.executorId}
           onChange={(e) => setForm((f) => ({ ...f, executorId: e.target.value }))}
           required
         >
           {executores.map((e) => (
             <option key={e.id} value={e.id}>
-              {e.nome} {e.role === 'admin' ? '(Márcio)' : ''}
+              {e.nome}
             </option>
           ))}
-        </Select>
+        </StyledSelect>
       </Field>
 
       <div className="grid grid-cols-2 gap-3">
