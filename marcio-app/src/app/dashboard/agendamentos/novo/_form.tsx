@@ -168,7 +168,7 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
     <select
       value={value}
       onChange={onChange}
-      className="flex h-9 w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-1 text-sm text-offwhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50"
+      className="flex h-9 w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-1 text-base md:text-sm text-offwhite focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 disabled:opacity-50"
       {...props}
     >
       {children}
@@ -299,7 +299,7 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
           onChange={(e) => setForm((f) => ({ ...f, observacoes: e.target.value }))}
           rows={2}
           placeholder="Ex: Cliente prefere horário pela manhã, tem alergia a X…"
-          className="flex w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-2 text-sm text-offwhite placeholder:text-offwhite/35 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 resize-none"
+          className="flex w-full rounded-md border border-gold/20 bg-brand-800 px-3 py-2 text-base md:text-sm text-offwhite placeholder:text-offwhite/35 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold/60 resize-none"
         />
       </Field>
 
