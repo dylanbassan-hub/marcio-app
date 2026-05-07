@@ -63,7 +63,7 @@ export function BottomNav() {
   const items = NAV_ITEMS.filter((i) => i.roles.includes(user.role) && !i.sidebarOnly)
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-brand-900 border-t border-gold/10 pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-brand-900 border-t border-gold/10 pb-safe">
       <div className="flex items-center justify-around h-16">
         {items.map((item) => {
           const active = pathname === item.href ||
