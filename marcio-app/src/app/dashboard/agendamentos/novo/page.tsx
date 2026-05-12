@@ -36,11 +36,10 @@ export default async function NovoAgendamentoPage() {
 
   const profile = profileData as ProfileNovoAgendamento | null
 
-  // Só admin e recepcionista podem criar
-  if (!profile || profile.role === 'barbeiro') redirect('/dashboard/agenda')
+  // Admin, recepcionista e barbeiro podem criar agendamentos
+  if (!profile) redirect('/dashboard/agenda')
 
   // Buscar executores: apenas barbeiros + Márcio (is_marcio=true)
-  // Dylan e Liandra são admin mas não executam serviços
   const { data: executoresData } = await supabase
     .from('users')
     .select('id, nome, role')
