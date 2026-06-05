@@ -1,12 +1,13 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { BadgeStatus } from '@/components/ui/badge'
 import { formatBRL } from '@/lib/utils'
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, format, addDays } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatHora } from '@/lib/date'
-import { DollarSign } from 'lucide-react'
+import { CalendarPlus, DollarSign } from 'lucide-react'
 import type { UserRow } from '@/lib/types/database'
 
 export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
@@ -79,11 +80,19 @@ export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
     <div className="p-4 space-y-5 max-w-lg mx-auto">
 
       {/* Header */}
-      <div className="pt-2">
-        <h1 className="font-syne font-bold text-xl text-gold">Minha agenda</h1>
-        <p className="text-offwhite/50 text-sm">
-          {profile.nome} · {format(now, "d 'de' MMMM", { locale: ptBR })}
-        </p>
+      <div className="flex items-center justify-between pt-2">
+        <div>
+          <h1 className="font-syne font-bold text-xl text-gold">Minha agenda</h1>
+          <p className="text-offwhite/50 text-sm">
+            {profile.nome} · {format(now, "d 'de' MMMM", { locale: ptBR })}
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/agendamentos/novo">
+            <CalendarPlus size={16} />
+            + Novo
+          </Link>
+        </Button>
       </div>
 
       {/* Comissões do mês */}
