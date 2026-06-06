@@ -11,15 +11,13 @@ export type AgendamentoGrid = {
   inicio: string
   fim: string
   origem: string
+  executor_id: string | null
   cliente: { id: number; nome: string } | null
   executor: { id: string; nome: string } | null
   servico: { nome: string; codigo: string } | null
 }
 
-export type ExecutorGrid = {
-  id: string
-  nome: string
-}
+export type ExecutorGrid = { id: string; nome: string }
 
 interface AgendaGridProps {
   dia: Date
@@ -53,20 +51,12 @@ function minFromIso(iso: string): number {
   return d.getHours() * 60 + d.getMinutes()
 }
 
-function minFromSlot(slot: string): number {
-  const [h, m] = slot.split(':').map(Number)
-  return h * 60 + m
-}
-
 function slotIdxFromIso(iso: string): number {
-  const m = minFromIso(iso)
-  const base = HORA_INICIO * 60
-  return Math.max(0, Math.floor((m - base) / SLOT_MIN))
+  return Math.max(0, Math.floor((minFromIso(iso) - HORA_INICIO * 60) / SLOT_MIN))
 }
 
 function spanSlots(inicio: string, fim: string): number {
-  const diff = minFromIso(fim) - minFromIso(inicio)
-  return Math.max(1, Math.round(diff / SLOT_MIN))
+  return Math.max(1, Math.round((minFromIso(fim) - minFromIso(inicio)) / SLOT_MIN))
 }
 
 function corServico(codigo: string, status: string) {
@@ -96,7 +86,7 @@ function CelulaAgendamento({ ag, span }: { ag: AgendamentoGrid; span: number }) 
     >
       <div className="px-2 py-1.5 h-full flex flex-col overflow-hidden">
         <p className="text-[11px] font-semibold leading-tight truncate" style={{ color: text }}>
-          {ag.cliente?.nome ?? '—'}
+          {ag.cliente?.nome ?? '&mdash;'}
         </p>
         {span >= 2 && (
           <p className="text-[10px] opacity-70 truncate mt-0.5" style={{ color: text }}>
@@ -104,16 +94,14 @@ function CelulaAgendamento({ ag, span }: { ag: AgendamentoGrid; span: number }) 
           </p>
         )}
         <p className="text-[10px] opacity-50 font-mono mt-auto" style={{ color: text }}>
-          {h1}–{h2}
+          {h1}&ndash;{h2}
         </p>
       </div>
     </Link>
   )
 }
 
-function ColunaExecutor({
-  executor, agendamentos, dia, isAdmin,
-}: {
+function ColunaExecutor({ executor, agendamentos, dia, isAdmin }: {
   executor: ExecutorGrid
   agendamentos: AgendamentoGrid[]
   dia: Date
@@ -138,7 +126,7 @@ function ColunaExecutor({
         return (
           <div
             key={slot}
-            className={`relative ${isMeia ? 'border-b border-white/3' : 'border-b border-white/8'}`}
+            className={`relative ${isMeia ? 'border-b border-white/[0.03]' : 'border-b border-white/[0.08]'}`}
             style={{ height: `${CELL_H}px` }}
           >
             {entry && !covered && (
@@ -181,17 +169,18 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
   })()
 
   function agsDoExecutor(id: string) {
-    return agendamentos.filter((ag) => ag.executor?.id === id)
+    return agendamentos.filter((ag) =>
+      ag.executor_id === id || ag.executor?.id === id
+    )
   }
 
   const totalW = TIME_COL_W + executores.length * BAR_COL_W
 
   return (
     <div className="flex flex-col h-full min-h-0">
-      {/* Navegação */}
       <div className="flex items-center justify-between mb-3 shrink-0">
         <Link href={prevDiaHref} className="px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 hover:bg-gold/5 text-offwhite/50 hover:text-offwhite transition-all text-sm">
-          &lsaquo; Anterior
+          Anterior
         </Link>
         <div className="text-center">
           <p className={`font-syne font-bold text-base ${isHoje ? 'text-gold' : 'text-offwhite'}`}>
@@ -205,16 +194,14 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
           )}
         </div>
         <Link href={nextDiaHref} className="px-3 py-1.5 rounded-lg border border-white/10 hover:border-gold/30 hover:bg-gold/5 text-offwhite/50 hover:text-offwhite transition-all text-sm">
-          Pr&oacute;ximo &rsaquo;
+          Proximo
         </Link>
       </div>
 
-      {/* Grade */}
-      <div className="flex-1 min-h-0 rounded-xl border border-white/8 overflow-hidden bg-[#0e0c18] flex flex-col">
-        {/* Header fixo */}
+      <div className="flex-1 min-h-0 rounded-xl border border-white/[0.08] overflow-hidden bg-[#0e0c18] flex flex-col">
         <div className="shrink-0 overflow-x-auto border-b border-white/10">
           <div className="flex" style={{ minWidth: `${totalW}px` }}>
-            <div className="shrink-0 flex items-center justify-center border-r border-white/8" style={{ width: `${TIME_COL_W}px`, height: '72px' }}>
+            <div className="shrink-0 flex items-center justify-center border-r border-white/[0.08]" style={{ width: `${TIME_COL_W}px`, height: '72px' }}>
               <span className="text-[10px] text-offwhite/20">hora</span>
             </div>
             {executores.map((exec, idx) => (
@@ -232,15 +219,13 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
           </div>
         </div>
 
-        {/* Corpo scroll */}
         <div ref={scrollRef} className="overflow-auto flex-1">
           <div className="relative flex" style={{ minWidth: `${totalW}px` }}>
-            {/* Coluna de horas */}
-            <div className="shrink-0 border-r border-white/8" style={{ width: `${TIME_COL_W}px` }}>
+            <div className="shrink-0 border-r border-white/[0.08]" style={{ width: `${TIME_COL_W}px` }}>
               {SLOTS.map((slot) => (
                 <div
                   key={slot}
-                  className={`flex items-start justify-end pr-2 pt-1 ${slot.endsWith(':30') ? 'border-b border-white/3' : 'border-b border-white/8'}`}
+                  className={`flex items-start justify-end pr-2 pt-1 ${slot.endsWith(':30') ? 'border-b border-white/[0.03]' : 'border-b border-white/[0.08]'}`}
                   style={{ height: `${CELL_H}px` }}
                 >
                   {!slot.endsWith(':30') && (
@@ -250,7 +235,6 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
               ))}
             </div>
 
-            {/* Colunas dos executores */}
             {executores.map((exec) => (
               <ColunaExecutor
                 key={exec.id}
@@ -261,7 +245,6 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
               />
             ))}
 
-            {/* Linha de agora */}
             {agoraPx !== null && (
               <div className="absolute left-0 right-0 z-30 pointer-events-none flex items-center" style={{ top: `${agoraPx}px` }}>
                 <div className="w-2 h-2 rounded-full bg-red-500 ml-10 shrink-0" />
@@ -272,7 +255,6 @@ export function AgendaGrid({ dia, agendamentos, executores, isAdmin, prevDiaHref
         </div>
       </div>
 
-      {/* Legenda */}
       <div className="flex items-center gap-4 mt-2 flex-wrap shrink-0">
         {[
           { label: 'Aplicacao',  c: '#8b5cf6' },

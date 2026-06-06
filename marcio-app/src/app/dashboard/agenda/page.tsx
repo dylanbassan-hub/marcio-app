@@ -46,7 +46,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   let query = supabase
     .from('agendamentos')
-    .select(`id, status, inicio, fim, origem,
+    .select(`id, status, inicio, fim, origem, executor_id,
       cliente:clientes(id, nome),
       executor:users!agendamentos_executor_id_fkey(id, nome),
       servico:servicos(nome, codigo)`)
@@ -69,7 +69,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   const prevSemana = semanaOffset - 1
   const nextSemana = semanaOffset + 1
-  const diaFmt = format(diaAtual, 'yyyy-MM-dd')
+  const diaFmt    = format(diaAtual, 'yyyy-MM-dd')
   const prevDiaFmt = format(prevDia, 'yyyy-MM-dd')
   const nextDiaFmt = format(nextDia, 'yyyy-MM-dd')
   const isAdmin = profile.role === 'admin' || profile.is_marcio === true
@@ -81,12 +81,16 @@ export default async function AgendaPage({ searchParams }: PageProps) {
         <h1 className="font-syne font-bold text-xl text-gold">Agenda</h1>
         <div className="flex items-center gap-2">
           <div className="flex rounded-md border border-gold/20 overflow-hidden">
-            <Link href={`/dashboard/agenda?view=lista&semana=${semanaOffset}`}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors ${!isGrid ? 'bg-gold/20 text-gold font-medium' : 'text-offwhite/50 hover:text-offwhite'}`}>
+            <Link
+              href={`/dashboard/agenda?view=lista&semana=${semanaOffset}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs transition-colors ${!isGrid ? 'bg-gold/20 text-gold font-medium' : 'text-offwhite/50 hover:text-offwhite'}`}
+            >
               <List size={13} /><span className="hidden sm:inline">Lista</span>
             </Link>
-            <Link href={`/dashboard/agenda?view=grid&dia=${diaFmt}`}
-              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs border-l border-gold/20 transition-colors ${isGrid ? 'bg-gold/20 text-gold font-medium' : 'text-offwhite/50 hover:text-offwhite'}`}>
+            <Link
+              href={`/dashboard/agenda?view=grid&dia=${diaFmt}`}
+              className={`flex items-center gap-1 px-2.5 py-1.5 text-xs border-l border-gold/20 transition-colors ${isGrid ? 'bg-gold/20 text-gold font-medium' : 'text-offwhite/50 hover:text-offwhite'}`}
+            >
               <LayoutGrid size={13} /><span className="hidden sm:inline">Grade</span>
             </Link>
           </div>
@@ -124,20 +128,22 @@ export default async function AgendaPage({ searchParams }: PageProps) {
             </Button>
             <div className="text-center">
               <p className="text-offwhite font-medium text-sm">
-                {format(semanaInicio, 'd MMM', { locale: ptBR })} – {format(semanaFim, 'd MMM yyyy', { locale: ptBR })}
+                {format(semanaInicio, 'd MMM', { locale: ptBR })} {String.fromCharCode(8211)} {format(semanaFim, 'd MMM yyyy', { locale: ptBR })}
               </p>
               {semanaOffset === 0 && <p className="text-xs text-gold/70">Semana atual</p>}
             </div>
             <Button asChild variant="ghost" size="sm">
               <Link href={`/dashboard/agenda?view=lista&semana=${nextSemana}`}>
-                <span className="hidden sm:inline">Próxima</span><ChevronRight size={16} />
+                <span className="hidden sm:inline">Proxima</span><ChevronRight size={16} />
               </Link>
             </Button>
           </div>
 
           <div className="space-y-4 overflow-y-auto flex-1">
             {dias.map((dia) => {
-              const agsDia = (agendamentos ?? []).filter((ag: { inicio: string }) => isSameDay(new Date(ag.inicio), dia))
+              const agsDia = (agendamentos ?? []).filter(
+                (ag: { inicio: string }) => isSameDay(new Date(ag.inicio), dia)
+              )
               const isHoje = isSameDay(dia, hoje)
               return (
                 <div key={dia.toISOString()}>
@@ -145,13 +151,23 @@ export default async function AgendaPage({ searchParams }: PageProps) {
                     <span className="text-xs font-medium uppercase tracking-wide">{format(dia, 'EEEE', { locale: ptBR })}</span>
                     <span className={`text-xs font-semibold px-1.5 py-0.5 rounded ${isHoje ? 'bg-gold/20 text-gold' : ''}`}>{format(dia, 'd/MM')}</span>
                     <span className="text-xs text-offwhite/30">({agsDia.length})</span>
-                    <Link href={`/dashboard/agenda?view=grid&dia=${format(dia, 'yyyy-MM-dd')}`} className="ml-auto text-[10px] text-offwhite/25 hover:text-gold/60 transition-colors">Grade →</Link>
+                    <Link
+                      href={`/dashboard/agenda?view=grid&dia=${format(dia, 'yyyy-MM-dd')}`}
+                      className="ml-auto text-[10px] text-offwhite/25 hover:text-gold/60 transition-colors"
+                    >
+                      Grade
+                    </Link>
                   </div>
                   {agsDia.length === 0 ? (
-                    <p className="text-offwhite/20 text-sm px-1 pb-2">—</p>
+                    <p className="text-offwhite/20 text-sm px-1 pb-2">-</p>
                   ) : (
                     <div className="space-y-1.5">
-                      {agsDia.map((ag: { id: number; inicio: string; cliente: { nome: string } | null; servico: { nome: string } | null; executor: { nome: string } | null; origem: string; status: string }) => (
+                      {agsDia.map((ag: {
+                        id: number; inicio: string; status: string; origem: string;
+                        cliente: { nome: string } | null;
+                        servico: { nome: string } | null;
+                        executor: { nome: string } | null;
+                      }) => (
                         <Link key={ag.id} href={`/dashboard/agendamentos/${ag.id}`}>
                           <Card className={`hover:border-gold/40 transition-colors cursor-pointer ${isHoje ? 'border-gold/25' : ''}`}>
                             <CardContent className="py-2.5 px-4">
@@ -160,7 +176,7 @@ export default async function AgendaPage({ searchParams }: PageProps) {
                                   <span className="text-offwhite/60 text-xs font-mono shrink-0 w-10">{formatHora(ag.inicio)}</span>
                                   <div className="min-w-0">
                                     <p className="text-offwhite font-medium text-sm truncate">{ag.cliente?.nome}</p>
-                                    <p className="text-offwhite/40 text-xs">{ag.servico?.nome} · {ag.executor?.nome}</p>
+                                    <p className="text-offwhite/40 text-xs">{ag.servico?.nome} {ag.executor?.nome ? `· ${ag.executor.nome}` : ''}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
