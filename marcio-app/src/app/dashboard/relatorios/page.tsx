@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { BadgeOrigem } from '@/components/ui/badge'
@@ -191,6 +192,12 @@ export default async function RelatoriosPage({ searchParams }: PageProps) {
         <div>
           <h1 className="font-syne font-bold text-xl text-gold">Relatórios</h1>
           <p className="text-offwhite/50 text-sm capitalize">{mesLabel}</p>
+          <Link
+            href="/dashboard/relatorios/trafego-pago"
+            className="inline-block text-xs text-gold/60 hover:text-gold underline mt-1"
+          >
+            Ver clientes via tráfego pago →
+          </Link>
         </div>
 
         <div className="flex gap-1">

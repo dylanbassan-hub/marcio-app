@@ -40,9 +40,15 @@ export default async function AgendaPage({ searchParams }: PageProps) {
   const semanaInicio = startOfWeek(referenciaData, { weekStartsOn: 1 })
   const semanaFim = endOfWeek(referenciaData, { weekStartsOn: 1 })
   const dias = eachDayOfInterval({ start: semanaInicio, end: semanaFim })
+  const diaFmt = format(diaAtual, 'yyyy-MM-dd')
 
-  const rangeInicio = isGrid ? startOfDay(diaAtual) : startOfDay(semanaInicio)
-  const rangeFim    = isGrid ? endOfDay(diaAtual)   : endOfDay(semanaFim)
+  // Para grid: usar UTC explícito para evitar offset Vercel (UTC) vs SP (UTC-3)
+  const rangeInicio = isGrid
+    ? new Date(`${diaFmt}T00:00:00.000Z`)
+    : startOfDay(semanaInicio)
+  const rangeFim = isGrid
+    ? new Date(`${diaFmt}T23:59:59.999Z`)
+    : endOfDay(semanaFim)
 
   let query = supabase
     .from('agendamentos')
@@ -69,7 +75,6 @@ export default async function AgendaPage({ searchParams }: PageProps) {
 
   const prevSemana = semanaOffset - 1
   const nextSemana = semanaOffset + 1
-  const diaFmt    = format(diaAtual, 'yyyy-MM-dd')
   const prevDiaFmt = format(prevDia, 'yyyy-MM-dd')
   const nextDiaFmt = format(nextDia, 'yyyy-MM-dd')
   const isAdmin = profile.role === 'admin' || profile.is_marcio === true
