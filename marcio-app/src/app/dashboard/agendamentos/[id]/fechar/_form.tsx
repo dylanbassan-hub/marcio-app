@@ -10,11 +10,13 @@ interface Props {
   agendamentoId: number
   isAplicacao: boolean
   closerId: string
+  telefone: string | null
+  origem: string
 }
 
 const PAGAMENTOS = ['PIX', 'Cartão de débito', 'Cartão de crédito', 'Dinheiro']
 
-export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: Props) {
+export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId, telefone, origem }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const supabase = createClient()
@@ -59,6 +61,22 @@ export function FecharAgendamentoForm({ agendamentoId, isAplicacao, closerId }: 
       if (err) {
         setError(`Erro: ${err.message}`)
         return
+      }
+
+      // Fase 1 — Conversões Offline: avisa o Meta quando fecha de verdade.
+      // Best-effort: não bloqueia o fluxo se a chamada falhar.
+      if (form.resultado === 'REALIZADO' && telefone) {
+        fetch('/api/meta-offline-conversions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event_name: 'Fechou',
+            telefone,
+            origem,
+            value: parseFloat(form.valorServico.replace(',', '.')),
+            currency: 'BRL',
+          }),
+        }).catch(() => {})
       }
 
       router.push(`/dashboard/agendamentos/${agendamentoId}`)

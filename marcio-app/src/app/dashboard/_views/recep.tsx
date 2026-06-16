@@ -6,7 +6,7 @@ import { BadgeOrigem, BadgeStatus } from '@/components/ui/badge'
 import { startOfDay, endOfDay, addDays, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatHora } from '@/lib/date'
-import { CalendarPlus, MessageCircle } from 'lucide-react'
+import { CalendarPlus, MessageCircle, Flame } from 'lucide-react'
 import { whatsappLink } from '@/lib/utils'
 import type { UserRow } from '@/lib/types/database'
 
@@ -51,12 +51,20 @@ export async function RecepDashboard({ profile }: { profile: UserRow }) {
             {format(now, "d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
-        <Button asChild>
-          <Link href="/dashboard/agendamentos/novo">
-            <CalendarPlus size={16} />
-            + Novo
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href="/dashboard/conversas/nova">
+              <Flame size={16} />
+              + Qualificada
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link href="/dashboard/agendamentos/novo">
+              <CalendarPlus size={16} />
+              + Novo
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Próximos 3 dias */}

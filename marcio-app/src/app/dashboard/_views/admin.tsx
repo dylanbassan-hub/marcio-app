@@ -7,7 +7,7 @@ import { formatBRL } from '@/lib/utils'
 import { startOfMonth, endOfMonth, startOfDay, endOfDay, format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatHora } from '@/lib/date'
-import { CalendarPlus, TrendingUp, Users, DollarSign } from 'lucide-react'
+import { CalendarPlus, TrendingUp, Users, DollarSign, Flame } from 'lucide-react'
 import type { UserRow } from '@/lib/types/database'
 
 type AgendamentoRealizado = {
@@ -90,12 +90,20 @@ export async function AdminDashboard({ profile }: { profile: UserRow }) {
             {format(now, "EEEE, d 'de' MMMM", { locale: ptBR })}
           </p>
         </div>
-        <Button asChild size="sm">
-          <Link href="/dashboard/agendamentos/novo">
-            <CalendarPlus size={16} />
-            Novo
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild size="sm" variant="outline">
+            <Link href="/dashboard/conversas/nova">
+              <Flame size={16} />
+              Qualificada
+            </Link>
+          </Button>
+          <Button asChild size="sm">
+            <Link href="/dashboard/agendamentos/novo">
+              <CalendarPlus size={16} />
+              Novo
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* KPI Cards */}

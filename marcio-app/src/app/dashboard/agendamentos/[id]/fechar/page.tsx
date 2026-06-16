@@ -15,12 +15,14 @@ type ProfileFechamento = {
 type AgendamentoFechamento = {
   id: number
   status: string
+  origem: string
   servico: {
     nome: string
     codigo: string
   }
   cliente: {
     nome: string
+    telefone: string | null
   }
 }
 
@@ -48,7 +50,7 @@ export default async function FecharAgendamentoPage({ params }: Props) {
 
   const { data: agData } = await supabase
     .from('agendamentos')
-    .select(`*, servico:servicos(nome, codigo), cliente:clientes(nome)`)
+    .select(`*, servico:servicos(nome, codigo), cliente:clientes(nome, telefone)`)
     .eq('id', id)
     .single()
 
@@ -85,6 +87,8 @@ export default async function FecharAgendamentoPage({ params }: Props) {
         agendamentoId={ag.id}
         isAplicacao={isAplicacao}
         closerId={user.id}
+        telefone={ag.cliente.telefone}
+        origem={ag.origem}
       />
     </div>
   )

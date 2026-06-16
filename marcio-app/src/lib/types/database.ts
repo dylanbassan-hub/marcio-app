@@ -127,6 +127,22 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['comissoes']['Row'], 'id' | 'created_at'>
         Update: Partial<Database['public']['Tables']['comissoes']['Insert']>
       }
+      conversas_qualificadas: {
+        Row: {
+          id:              number
+          telefone:        string
+          nome:            string | null
+          origem:          OrigemLead
+          origem_detalhe:  string | null
+          observacoes:     string | null
+          meta_enviado:    boolean
+          meta_enviado_at: string | null
+          created_at:      string
+          created_by:      string | null
+        }
+        Insert: Omit<Database['public']['Tables']['conversas_qualificadas']['Row'], 'id' | 'created_at'>
+        Update: Partial<Database['public']['Tables']['conversas_qualificadas']['Insert']>
+      }
     }
     Functions: {
       get_my_role:  { Args: Record<never, never>; Returns: string }
