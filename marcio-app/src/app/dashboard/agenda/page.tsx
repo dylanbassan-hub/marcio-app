@@ -61,16 +61,15 @@ export default async function AgendaPage({ searchParams }: PageProps) {
     .not('status', 'in', '(CANCELADO)')
     .order('inicio')
 
-  if (profile.role === 'barbeiro') query = query.eq('executor_id', profile.id)
+  // Agenda é compartilhada: todos os perfis (admin, recepcionista, barbeiro)
+  // veem os agendamentos de todos os executores — sem filtro por executor_id.
   const { data: agendamentos } = await query
 
   let executoresGrid: { id: string; nome: string }[] = []
   if (isGrid) {
     const { data: execData } = await supabase
       .from('users').select('id, nome').in('role', ['admin', 'barbeiro']).eq('ativo', true).order('nome')
-    executoresGrid = profile.role === 'barbeiro'
-      ? (execData ?? []).filter((e: { id: string; nome: string }) => e.id === profile.id)
-      : (execData ?? []) as { id: string; nome: string }[]
+    executoresGrid = (execData ?? []) as { id: string; nome: string }[]
   }
 
   const prevSemana = semanaOffset - 1

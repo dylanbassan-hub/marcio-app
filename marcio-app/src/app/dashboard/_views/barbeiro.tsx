@@ -16,15 +16,15 @@ export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
   const mesInicio = startOfMonth(now).toISOString()
   const mesFim = endOfMonth(now).toISOString()
 
-  // Minha agenda: hoje + amanhã
+  // Agenda compartilhada: hoje + amanha
   const { data: agenda } = await supabase
     .from('agendamentos')
     .select(`
       id, status, inicio, fim,
       cliente:clientes(nome),
+      executor:users!agendamentos_executor_id_fkey(nome),
       servico:servicos(nome, codigo)
     `)
-    .eq('executor_id', profile.id)
     .gte('inicio', startOfDay(now).toISOString())
     .lte('inicio', endOfDay(addDays(now, 1)).toISOString())
     .not('status', 'in', '(CANCELADO)')
@@ -63,6 +63,7 @@ export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
                       </p>
                       <p className="text-offwhite/50 text-xs mt-0.5">
                         {formatHora(ag.inicio)} · {ag.servico?.nome}
+                        {ag.executor?.nome ? ` · ${ag.executor.nome}` : ''}
                       </p>
                     </div>
                     <BadgeStatus status={ag.status} />
@@ -82,7 +83,7 @@ export async function BarbeiroDashboard({ profile }: { profile: UserRow }) {
       {/* Header */}
       <div className="flex items-center justify-between pt-2">
         <div>
-          <h1 className="font-syne font-bold text-xl text-gold">Minha agenda</h1>
+          <h1 className="font-syne font-bold text-xl text-gold">Agenda</h1>
           <p className="text-offwhite/50 text-sm">
             {profile.nome} · {format(now, "d 'de' MMMM", { locale: ptBR })}
           </p>
