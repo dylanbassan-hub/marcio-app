@@ -1,10 +1,12 @@
-@"
 # Node / Next
 node_modules/
 .next/
 out/
 dist/
 build/
+
+# TypeScript build cache
+*.tsbuildinfo
 
 # Env / secrets
 .env
@@ -24,4 +26,3 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
-"@ | Set-Content .gitignore

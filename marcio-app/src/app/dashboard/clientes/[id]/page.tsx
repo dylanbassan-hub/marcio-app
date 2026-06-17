@@ -8,6 +8,8 @@ import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatDataHoraCurta } from '@/lib/date'
 import { ChevronLeft, MessageCircle } from 'lucide-react'
+import { EditarOrigemCliente } from './_editar-origem'
+import type { OrigemLead } from '@/lib/types/database'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -16,6 +18,8 @@ interface Props {
 type ProfileCliente = {
   role: string
 }
+
+const PODE_EDITAR_ORIGEM = ['admin', 'recepcionista']
 
 type ClienteDetalhe = {
   id: number
@@ -96,10 +100,17 @@ export default async function ClientePage({ params }: Props) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <h1 className="font-syne font-bold text-xl text-offwhite">{cliente.nome}</h1>
-          {cliente.origem_primeira_compra && (
-            <div className="mt-1.5">
-              <BadgeOrigem origem={cliente.origem_primeira_compra as any} />
-            </div>
+          {PODE_EDITAR_ORIGEM.includes(profile.role) ? (
+            <EditarOrigemCliente
+              clienteId={cliente.id}
+              origemAtual={cliente.origem_primeira_compra as OrigemLead | null}
+            />
+          ) : (
+            cliente.origem_primeira_compra && (
+              <div className="mt-1.5">
+                <BadgeOrigem origem={cliente.origem_primeira_compra as any} />
+              </div>
+            )
           )}
         </div>
 

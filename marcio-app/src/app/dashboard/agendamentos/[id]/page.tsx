@@ -10,6 +10,8 @@ import { ptBR } from 'date-fns/locale'
 import { formatDataHora, formatDiaHora } from '@/lib/date'
 import { MessageCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
 import { AtualizarStatusBtn } from './_status-btn'
+import { EditarOrigemAgendamento } from './_editar-origem'
+import type { OrigemLead } from '@/lib/types/database'
 
 interface Props {
   params: Promise<{ id: string }>
@@ -105,6 +107,8 @@ export default async function AgendamentoPage({ params }: Props) {
     profile.role === 'recepcionista' ||
     profile.id === ag.executor?.id
 
+  const canEditOrigem = profile.role === 'admin' || profile.role === 'recepcionista'
+
   return (
     <div className="p-4 max-w-lg mx-auto space-y-4">
       {/* Back */}
@@ -136,7 +140,20 @@ export default async function AgendamentoPage({ params }: Props) {
           <Row label="Executor" value={ag.executor?.nome ?? '—'} />
           <Row label="Recepcionista" value={ag.recepcionista?.nome ?? '—'} />
           <Row label="Duração" value={`${ag.servico.duracao_min}min`} />
-          <Row label="Origem" value={<BadgeOrigem origem={ag.origem as any} />} />
+          <Row
+            label="Origem"
+            value={
+              canEditOrigem ? (
+                <EditarOrigemAgendamento
+                  agendamentoId={ag.id}
+                  origemAtual={ag.origem as OrigemLead}
+                  origemDetalheAtual={ag.origem_detalhe}
+                />
+              ) : (
+                <BadgeOrigem origem={ag.origem as any} />
+              )
+            }
+          />
           {ag.origem_detalhe && <Row label="Detalhe" value={ag.origem_detalhe} />}
           {ag.observacoes && <Row label="Obs." value={ag.observacoes} />}
         </CardContent>

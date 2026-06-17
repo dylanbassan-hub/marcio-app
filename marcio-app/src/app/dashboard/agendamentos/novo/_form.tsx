@@ -12,6 +12,9 @@ interface Props {
   executores: { id: string; nome: string; role: string }[]
   servicos: { id: number; nome: string; codigo: string; duracao_min: number }[]
   recepcionistaId: string
+  defaultData?: string
+  defaultHora?: string
+  defaultExecutorId?: string
 }
 
 type IdRow = {
@@ -160,9 +163,45 @@ function BuscaClienteExistente({
   )
 }
 
+// ─── Detecção de duplicata no modo "Novo" ────────────────────────────────────
+
+function useDuplicataCliente(nome: string, telefone: string) {
+  const supabase = createClient()
+  const [duplicata, setDuplicata] = useState<ClienteSugestao | null>(null)
+
+  useEffect(() => {
+    const tel = telefone.replace(/\D/g, '')
+    const nomeLimpo = nome.trim()
+
+    // Precisa de pelo menos telefone com 8+ dígitos OU nome com 3+ chars
+    if (tel.length < 8 && nomeLimpo.length < 3) {
+      setDuplicata(null)
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      const filters: string[] = []
+      if (tel.length >= 8) filters.push(`telefone.ilike.%${tel}%`)
+      if (nomeLimpo.length >= 3) filters.push(`nome.ilike.%${nomeLimpo}%`)
+
+      const { data } = await (supabase as any)
+        .from('clientes')
+        .select('id, nome, telefone, instagram')
+        .or(filters.join(','))
+        .limit(1)
+        .maybeSingle()
+
+      setDuplicata((data as ClienteSugestao) ?? null)
+    }, 400)
+
+    return () => clearTimeout(timer)
+  }, [nome, telefone])
+
+  return duplicata
+}
 // ────────────────────────────────────────────────────────────────────────────
 
-export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: Props) {
+export function NovoAgendamentoForm({ executores, servicos, recepcionistaId, defaultData, defaultHora, defaultExecutorId }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const supabase = createClient()
@@ -176,15 +215,21 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
     clienteTelefone: '',
     clienteInstagram: '',
     servicoId: servicos[0]?.id.toString() ?? '',
-    executorId: executores[0]?.id ?? '',
-    data: format(new Date(), 'yyyy-MM-dd'),
-    hora: '09:00',
+    executorId: defaultExecutorId ?? executores[0]?.id ?? '',
+    data: defaultData ?? format(new Date(), 'yyyy-MM-dd'),
+    hora: defaultHora ?? '09:00',
     origem: '' as OrigemLead | '',
     origemDetalhe: '',
     observacoes: '',
   })
 
   const [error, setError] = useState<string | null>(null)
+
+  // Detectar duplicata enquanto Aline preenche o modo "Novo"
+  const duplicata = useDuplicataCliente(
+    modoCliente === 'novo' ? form.clienteNome : '',
+    modoCliente === 'novo' ? form.clienteTelefone : ''
+  )
 
   const servicoSelecionado = servicos.find((s) => s.id === parseInt(form.servicoId))
 
@@ -444,6 +489,32 @@ export function NovoAgendamentoForm({ executores, servicos, recepcionistaId }: P
         ) : (
           // Modo novo cliente
           <>
+            {/* ── Banner de duplicata ── */}
+            {duplicata && (
+              <div className="flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2.5">
+                <span className="text-amber-400 mt-0.5 shrink-0">⚠</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-amber-200 font-medium">
+                    Cliente já cadastrado
+                  </p>
+                  <p className="text-xs text-amber-200/70 truncate">
+                    {duplicata.nome}{duplicata.telefone ? ` · ${duplicata.telefone}` : ''}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setClienteSelecionado(duplicata)
+                    setModoCliente('existente')
+                    setForm(f => ({ ...f, clienteNome: '', clienteTelefone: '', clienteInstagram: '' }))
+                  }}
+                  className="shrink-0 text-xs font-semibold text-amber-300 border border-amber-400/40 rounded px-2 py-1 hover:bg-amber-400/20 transition-colors"
+                >
+                  Usar este
+                </button>
+              </div>
+            )}
+
             <Field label="Nome completo" required>
               <Input
                 value={form.clienteNome}
