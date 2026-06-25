@@ -105,13 +105,18 @@ export async function enviarConversaoOffline({
   }
 
   try {
+    // Em produção, NUNCA mandar test_event_code: isso jogaria os eventos no
+    // balde de "Eventos de Teste" do Events Manager, que não conta pra
+    // otimização/atribuição. Só usa o código de teste fora de produção.
+    const payload: Record<string, unknown> = { data: [event] }
+    if (process.env.NODE_ENV !== 'production' && process.env.META_TEST_EVENT_CODE) {
+      payload.test_event_code = process.env.META_TEST_EVENT_CODE
+    }
+
     const res = await fetch(CAPI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: [event],
-        test_event_code: process.env.META_TEST_EVENT_CODE,
-      }),
+      body: JSON.stringify(payload),
     })
 
     const result = await res.json()

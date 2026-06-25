@@ -8,7 +8,7 @@ import { formatBRL, whatsappLink } from '@/lib/utils'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
 import { formatDataHora, formatDiaHora } from '@/lib/date'
-import { MessageCircle, ChevronLeft, CheckCircle2 } from 'lucide-react'
+import { MessageCircle, ChevronLeft, CheckCircle2, Pencil } from 'lucide-react'
 import { AtualizarStatusBtn } from './_status-btn'
 import { EditarOrigemAgendamento } from './_editar-origem'
 import type { OrigemLead } from '@/lib/types/database'
@@ -242,6 +242,15 @@ export default async function AgendamentoPage({ params }: Props) {
 
       {/* Ações */}
       <div className="space-y-2 pb-4">
+        {canEditOrigem && (
+          <Button asChild variant="outline" className="w-full" size="lg">
+            <Link href={`/dashboard/agendamentos/${id}/editar`}>
+              <Pencil size={16} />
+              Editar agendamento
+            </Link>
+          </Button>
+        )}
+
         {canClose && (
           <Button asChild className="w-full" size="lg">
             <Link href={`/dashboard/agendamentos/${id}/fechar`}>

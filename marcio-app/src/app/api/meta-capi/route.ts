@@ -111,13 +111,17 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Em produção, NUNCA mandar test_event_code (cairia em "Eventos de Teste",
+    // que não conta pra otimização/atribuição). Só usa fora de produção.
+    const payload: Record<string, unknown> = { data: [event] }
+    if (process.env.NODE_ENV !== 'production' && process.env.META_TEST_EVENT_CODE) {
+      payload.test_event_code = process.env.META_TEST_EVENT_CODE
+    }
+
     const res = await fetch(CAPI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: [event],
-        test_event_code: process.env.META_TEST_EVENT_CODE, // opcional — remove em produção
-      }),
+      body: JSON.stringify(payload),
     })
 
     const result = await res.json()
